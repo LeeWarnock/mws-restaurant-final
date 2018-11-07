@@ -24,6 +24,8 @@ You have been provided the code for a restaurant reviews website. The code has a
 
 ## Getting Started
 
+## Fork and clone into a seperate folder: [Development server](https://github.com/LeeWarnock/mws-restaurant-stage-3)
+
 ### Development local API Server for Images and Content
 
 _Location of server = /server_
