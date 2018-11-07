@@ -16,7 +16,7 @@ class DBHelper {
 
     return idb.open("rrx", 1, function(upgradeDb) {
       var storex = upgradeDb.createObjectStore("restaurants");
-      //var storey = upgradeDb.createObjectStore("reviews");
+      var storey = upgradeDb.createObjectStore("reviews");
     });
   }
 
