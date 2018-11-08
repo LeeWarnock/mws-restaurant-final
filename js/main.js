@@ -1,3 +1,8 @@
+/* eslint-disable multiline-comment-style */
+/* eslint-disable lines-around-comment */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable max-statements */
+/* eslint-disable arrow-parens */
 let restaurants, neighborhoods, cuisines;
 var map;
 var markers = [];
@@ -154,7 +159,21 @@ createRestaurantHTML = restaurant => {
   name.innerHTML = restaurant.name;
   li.append(name);
 
-  const neighborhood = document.createElement("p");
+  /**
+   * Add Favorite Button.
+   */
+console.log("favorited: ", restaurant["favorited"]);
+const favoriteButton = document.createElement('button');
+favoriteButton.className = 'favoriteButton';
+let isFavorite = (restaurant.favorited && restaurant.favorited.toString() === "true") ? true : false;
+favoriteButton.setAttribute('aria-pressed', isFavorite);
+favoriteButton.setAttribute('aria-label', `Make ${restaurant.name} a favorite!`);
+favoriteButton.innerHTML = isFavorite ? '&#9829;' : '&#9825;';
+favoriteButton.onclick = event => favoriteClicked(restaurant, favoriteButton);
+
+li.append(favoriteButton);
+
+const neighborhood = document.createElement("p");
 
   neighborhood.innerHTML = restaurant.neighborhood;
   li.append(neighborhood);
