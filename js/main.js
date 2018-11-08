@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", event => {
 fetchNeighborhoods = () => {
   DBHelper.fetchNeighborhoods((error, neighborhoods) => {
     if (error) {
-      // Got an error
+      // Log error
       console.error(error);
     } else {
       self.neighborhoods = neighborhoods;
@@ -44,7 +44,7 @@ fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
 fetchCuisines = () => {
   DBHelper.fetchCuisines((error, cuisines) => {
     if (error) {
-      // Got an error!
+      // Log the error
       console.error(error);
     } else {
       self.cuisines = cuisines;
@@ -81,7 +81,6 @@ window.initMap = () => {
     scrollwheel: false
   });
   updateRestaurants();
-  //DBHelper.pushUpdates();
 };
 
 /*
