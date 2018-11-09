@@ -169,16 +169,13 @@ createRestaurantHTML = restaurant => {
     restaurant.favorited && restaurant.favorited.toString() === "true"
       ? true
       : false;
-  favoriteButton.setAttribute("aria-pressed", isFavorite);
-  favoriteButton.setAttribute(
-    "aria-label",
-    `Make ${restaurant.name} a favorite!`
-  );
-  favoriteButton.innerHTML = isFavorite ? "&#9829;" : "&#9825;";
-  favoriteButton.onclick = event => favoriteClicked(restaurant, favoriteButton);
+
+  favorite.id = "favorite-icon-" + restaurant.id;
+  favorite.onclick = event => handleFavoriteClick(restaurant.id, !isFavorite);
 
   li.append(favoriteButton);
 
+  //END FAVORITE
   const neighborhood = document.createElement("p");
 
   neighborhood.innerHTML = restaurant.neighborhood;
