@@ -106,7 +106,7 @@ updateRestaurants = () => {
     neighborhood,
     (error, restaurants) => {
       if (error) {
-        // Got an error!
+        // Error ALERT!
         console.error(error);
       } else {
         resetRestaurants(restaurants);
@@ -170,12 +170,17 @@ createRestaurantHTML = restaurant => {
       ? true
       : false;
 
+  const favorite = document.createElement("button");
+  favorite.style.background = isFavorite
+    ? `url("/icons/Favorite") no-repeat`
+    : `url("icons/001-like-1.svg") no-repeat`;
   favorite.id = "favorite-icon-" + restaurant.id;
   favorite.onclick = event => handleFavoriteClick(restaurant.id, !isFavorite);
 
   li.append(favoriteButton);
 
   //END FAVORITE
+
   const neighborhood = document.createElement("p");
 
   neighborhood.innerHTML = restaurant.neighborhood;
@@ -196,6 +201,17 @@ createRestaurantHTML = restaurant => {
   li.append(more);
 
   return li;
+};
+
+const handleFavoriteClick = (id, newState) => {
+  // Update properties of the restaurant data object
+  const favorite = document.getElementById("favorite-icon-" + id);
+  const restaurant = self.restaurants.filter(r => r.id === id)[0];
+  if (!restaurant) return;
+  restaurant["favorited"] = newState;
+  favorite.onclick = event =>
+    handleFavoriteClick(restaurant.id, !restaurant["favorited"]);
+  DBHelper.handleFavoriteClick(id, newState);
 };
 
 /**
