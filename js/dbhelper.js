@@ -221,6 +221,91 @@ class DBHelper {
   }
 }
 
+  /**
+   * Update restaurants cache
+   */
+  static updateCachedRestaurantData(id, updateObj) {
+    const dbPromise = idb.open("fm-udacity-restaurant");
+    // Update in the data for all restaurants first
+    dbPromise.then(db => {
+      console.log("Getting db transaction");
+      const tx = db.transaction("restaurants", "readwrite");
+      const value = tx
+        .objectStore("restaurants")
+        .get("-1")
+        .then(value => {
+          if (!value) {
+            console.log("No cached data found");
+            return;
+          }
+          const data = value.data;
+          const restaurantArr = data.filter(r => r.id === id);
+          const restaurantObj = restaurantArr[0];
+          // Update restaurantObj with updateObj details
+          if (!restaurantObj) return;
+          const keys = Object.keys(updateObj);
+          keys.forEach(k => {
+            restaurantObj[k] = updateObj[k];
+          });
+
+          // Put the data back in IDB storage
+          dbPromise.then(db => {
+            const tx = db.transaction("restaurants", "readwrite");
+            tx.objectStore("restaurants").put({ id: "-1", data: data });
+            return tx.complete;
+          });
+        });
+    });
+
+    // Update the restaurant specific data
+    dbPromise.then(db => {
+      console.log("Getting db transaction");
+      const tx = db.transaction("restaurants", "readwrite");
+      const value = tx
+        .objectStore("restaurants")
+        .get(id + "")
+        .then(value => {
+          if (!value) {
+            console.log("No cached data found");
+            return;
+          }
+          const restaurantObj = value.data;
+          console.log("Specific restaurant obj: ", restaurantObj);
+          // Update restaurantObj with updateObj details
+          if (!restaurantObj) return;
+          const keys = Object.keys(updateObj);
+          keys.forEach(k => {
+            restaurantObj[k] = updateObj[k];
+          });
+
+          // Put the data back in IDB storage
+          dbPromise.then(db => {
+            const tx = db.transaction("restaurants", "readwrite");
+            tx.objectStore("restaurants").put({
+              id: id + "",
+              data: restaurantObj
+            });
+            return tx.complete;
+          });
+        });
+    });
+  }
+
+  /**
+   * Adding and updating favorites
+   */
+  static updateFavorite(id, newState, callback) {
+    // Push the request into the waiting queue in IDB
+    const url = `${DBHelper.DATABASE_URL}/${id}/?is_favorite=${newState}`;
+    const method = "PUT";
+    DBHelper.updateCachedRestaurantData(id, { is_favorite: newState });
+    DBHelper.addPendingRequestToQueue(url, method);
+
+    // Update the favorite data on the selected ID in the cached data
+
+    callback(null, { id, value: newState });
+  }
+
 static favoriteClick(id, newState) {
   // Block any more clicks on this until the callback
   const fav = document.getElementById("favorite-icon-" + id);
