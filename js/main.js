@@ -203,15 +203,15 @@ createRestaurantHTML = restaurant => {
   return li;
 };
 
-const handleFavoriteClick = (id, newState) => {
+const favoriteClick = (id, newState) => {
   // Update properties of the restaurant data object
   const favorite = document.getElementById("favorite-icon-" + id);
   const restaurant = self.restaurants.filter(r => r.id === id)[0];
   if (!restaurant) return;
   restaurant["favorited"] = newState;
   favorite.onclick = event =>
-    handleFavoriteClick(restaurant.id, !restaurant["favorited"]);
-  DBHelper.handleFavoriteClick(id, newState);
+    favoriteClick(restaurant.id, !restaurant["favorited"]);
+  DBHelper.favoriteClick(id, newState);
 };
 
 /**
