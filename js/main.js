@@ -173,7 +173,7 @@ createRestaurantHTML = restaurant => {
   const favorite = document.createElement("button");
   favorite.style.background = isFavorite
     ? `url("/icons/Favorite.svg") no-repeat`
-    : `url("icons/Notfavorite.svg") no-repeat`;
+    : `url("/icons/Notfavorite.svg") no-repeat`;
   favorite.id = "favorite-icon-" + restaurant.id;
   favorite.onclick = event => favoriteClick(restaurant.id, !isFavorite);
   favoriteButton.append(favorite);
