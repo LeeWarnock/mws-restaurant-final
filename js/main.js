@@ -172,8 +172,8 @@ createRestaurantHTML = restaurant => {
 
   const favorite = document.createElement("button");
   favorite.style.background = isFavorite
-    ? `url("/icons/Favorite.svg") no-repeat`
-    : `url("/icons/Notfavorite.svg") no-repeat`;
+    ? `url("/img/icons/Favorite.svg") no-repeat`
+    : `url("/img/icons/Notfavorite.svg") no-repeat`;
   favorite.id = "favorite-icon-" + restaurant.id;
   favorite.onclick = event => favoriteClick(restaurant.id, !isFavorite);
   favoriteButton.append(favorite);
@@ -203,6 +203,7 @@ createRestaurantHTML = restaurant => {
   return li;
 };
 
+//Favorite Click Handler
 const favoriteClick = (id, newState) => {
   // Update properties of the restaurant data object
   const favorite = document.getElementById("favorite-icon-" + id);
