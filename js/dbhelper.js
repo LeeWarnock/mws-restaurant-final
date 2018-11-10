@@ -220,4 +220,24 @@ class DBHelper {
     return marker;
   }
 }
+
+static favoriteClick(id, newState) {
+  // Block any more clicks on this until the callback
+  const fav = document.getElementById("favorite-icon-" + id);
+  fav.onclick = null;
+
+  DBHelper.updateFavorite(id, newState, (error, resultObj) => {
+    if (error) {
+      console.log("Error updating favorite");
+      return;
+    }
+    // Update the button background for the specified favorite
+    const favorite = document.getElementById("favorite-icon-" + resultObj.id);
+    favorite.style.background = resultObj.value
+    ? `url("/img/icons/Favorite.svg") no-repeat`
+    : `url("/img/icons/Notfavorite.svg") no-repeat`;
+  });
+}
+
+
 const dbPromise = DBHelper.openDatabase();
