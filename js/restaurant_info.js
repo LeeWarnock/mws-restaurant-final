@@ -21,7 +21,7 @@ window.initMap = () => {
   });
 };
 
-/**
+/*
  * Get current restaurant from page URL.
  */
 fetchRestaurantFromURL = callback => {
@@ -33,10 +33,11 @@ fetchRestaurantFromURL = callback => {
   const id = getParameterByName("id");
   if (!id) {
     // no id found in URL
-    error = "No restaurant id in URL";
+    let error = "No restaurant id in URL";
     callback(error, null);
   } else {
     DBHelper.fetchRestaurantById(id, (error, restaurant) => {
+      console.log(restaurant);
       self.restaurant = restaurant;
       if (!restaurant) {
         console.error(error);
@@ -70,8 +71,9 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
+
   // fill reviews
-  fillReviewsHTML();
+  DBHelper.fetchReviewsById(restaurant.id).then(fillReviewsHTML);
 };
 
 /**
