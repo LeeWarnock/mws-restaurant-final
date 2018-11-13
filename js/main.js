@@ -161,22 +161,22 @@ createRestaurantHTML = restaurant => {
   /**
    * Add Favorite Button.
    */
-  const favButton = document.createElement("button");
-  favButton.className = "favButton";
+  const favoriteButton = document.createElement("button");
+  favoriteButton.className = "favoriteButton";
   let isFavorite =
     restaurant.is_favorite && restaurant.is_favorite.toString() === "true"
       ? true
       : false;
   console.log(`${restaurant.name}, ${restaurant.is_favorite}`);
-  favButton.setAttribute("aria-pressed", isFavorite);
-  favButton.setAttribute(
+  favoriteButton.setAttribute("aria-pressed", isFavorite);
+  favoriteButton.setAttribute(
     "aria-label",
     `Toggle to add ${restaurant.name} to favorites`
   );
-  favButton.innerHTML = isFavorite ? "💖" : "&#9825;";
-  favButton.onclick = event => favoriteClicked(restaurant, favButton);
+  favoriteButton.innerHTML = isFavorite ? "💖" : "&#9825;";
+  favoriteButton.onclick = event => favoriteClicked(restaurant, favoriteButton);
 
-  li.append(favButton);
+  li.append(favoriteButton);
 
   const neighborhood = document.createElement("p");
   neighborhood.innerHTML = restaurant.neighborhood;
