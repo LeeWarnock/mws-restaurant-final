@@ -224,6 +224,53 @@ class DBHelper {
         console.log("In fetchReviewsBy...ID catch, error:", error.message);
       });
   }
+  //ADDING CLICK FUNCTIONS
+
+  static updateFavorite(id, newState, callback) {
+    // Push the request into the waiting queue in IDB
+    const url = `${DBHelper.DATABASE_URL}/${id}/?is_favorite=${newState}`;
+    const method = "PUT";
+    DBHelper.updateCachedRestaurantData(id, { is_favorite: newState });
+    DBHelper.addPendingRequestToQueue(url, method);
+
+    // Update the favorite data on the selected ID in the cached data
+
+    callback(null, { id, value: newState });
+  }
+
+  static favoriteClick(id, newState) {
+    // Block any more clicks on this until the callback
+    const fav = document.getElementById("favorite-icon-" + id);
+    fav.onclick = null;
+
+    DBHelper.updateFavorite(id, newState, (error, resultObj) => {
+      if (error) {
+        console.log("Error updating favorite");
+        return;
+      }
+      // Update the button background for the specified favorite
+      const favorite = document.getElementById("favorite-icon-" + resultObj.id);
+      favorite.style.background = resultObj.value
+        ? `url("/img/icons/Favorite.svg") no-repeat`
+        : `url("/img/icons/Notfavorite.svg") no-repeat`;
+    });
+  }
+
+  /*
+   * Function to update the Reviews Data stored in idb store: reviewData
+   */
+  static updateReviewCache(id, update) {
+    console.log(`In updateReviewCache - id: ${id}, update: ${update}`);
+    let dbPromise = idb.open("restaurantReviews");
+
+    dbPromise.then(function(db) {
+      let trans = db
+        .transaction("reviewData", "readwrite")
+        .objectStore("reviewData")
+        .put({ id: Date.now(), restaurant_id: id, data: update });
+      return trans.complete;
+    });
+  }
 
   /*
    * Function to update the Restaurant Data stored in idb store: restaurantData

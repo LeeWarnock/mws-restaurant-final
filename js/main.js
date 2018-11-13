@@ -155,64 +155,78 @@ createRestaurantHTML = restaurant => {
   li.append(image);
 
   const name = document.createElement("h2");
-
   name.innerHTML = restaurant.name;
   li.append(name);
 
   /**
    * Add Favorite Button.
    */
-  console.log("favorited: ", restaurant["favorited"]);
-  const favoriteButton = document.createElement("button");
-  favoriteButton.className = "favoriteButton";
-  const isFavorite =
-    restaurant.favorited && restaurant.favorited.toString() === "true"
+  const favButton = document.createElement("button");
+  favButton.className = "favButton";
+  let isFavorite =
+    restaurant.is_favorite && restaurant.is_favorite.toString() === "true"
       ? true
       : false;
+  console.log(`${restaurant.name}, ${restaurant.is_favorite}`);
+  favButton.setAttribute("aria-pressed", isFavorite);
+  favButton.setAttribute(
+    "aria-label",
+    `Toggle to add ${restaurant.name} to favorites`
+  );
+  favButton.innerHTML = isFavorite ? "💖" : "&#9825;";
+  favButton.onclick = event => favoriteClicked(restaurant, favButton);
 
-  const favorite = document.createElement("button");
-  favorite.style.background = isFavorite
-    ? `url("/img/icons/Favorite.svg") no-repeat`
-    : `url("/img/icons/Notfavorite.svg") no-repeat`;
-  favorite.id = "favorite-icon-" + restaurant.id;
-  favorite.onclick = event => favoriteClick(restaurant.id, !isFavorite);
-  favoriteButton.append(favorite);
-  li.append(favoriteButton);
-
-  //END FAVORITE
+  li.append(favButton);
 
   const neighborhood = document.createElement("p");
-
   neighborhood.innerHTML = restaurant.neighborhood;
   li.append(neighborhood);
 
   const address = document.createElement("p");
-
   address.innerHTML = restaurant.address;
   li.append(address);
 
-  const more = document.createElement("button");
-
+  const more = document.createElement("a");
   more.innerHTML = "View Details";
-  more.onclick = function() {
-    const url = DBHelper.urlForRestaurant(restaurant);
-    window.location = url;
-  };
+  more.href = DBHelper.urlForRestaurant(restaurant);
   li.append(more);
 
   return li;
 };
 
+//END FAVORITE
+
 //Favorite Click Handler
-const favoriteClick = (id, newState) => {
-  // Update properties of the restaurant data object
-  const favorite = document.getElementById("favorite-icon-" + id);
-  const restaurant = self.restaurants.filter(r => r.id === id)[0];
-  if (!restaurant) return;
-  restaurant["favorited"] = newState;
-  favorite.onclick = event =>
-    favoriteClick(restaurant.id, !restaurant["favorited"]);
-  DBHelper.favoriteClick(id, newState);
+favoriteClicked = (restaurant, button) => {
+  //console.log(`Data: ${restaurant.name}, ${restaurant.is_favorite}, ${button}`);
+  //console.log(`favClicked. Entering state: ${button.getAttribute("aria-pressed")}`);
+
+  // Get current fav state
+  let fav =
+    button.getAttribute("aria-pressed") &&
+    button.getAttribute("aria-pressed") === "true"
+      ? true
+      : false;
+
+  let requestURL = `${DBHelper.DATABASE_URL}/${
+    restaurant.id
+  }/?is_favorite=${!fav}`;
+  let requestMethod = "PUT";
+  DBHelper.updateRestaurantCache(restaurant.id, { is_favorite: !fav });
+  DBHelper.addToUpdateQueue(requestURL, requestMethod);
+  //return fetch(`${DBHelper.DATABASE_URL}/restaurants/${restaurant.id}/?is_favorite=${!fav}`, {method: 'PUT'})
+  //.then(response => {
+  //  if(!response.ok) return Promise.reject("Favorite could not be updated.");
+  //  return response.json();
+  //}).then(updatedRestaurant => {
+  // Update restaurant on idb
+  // dbPromise.putRestaurants(updatedRestaurant, true);
+  // Change state of toggle button
+  //console.log(`Exiting state: ${!fav}`);
+  button.setAttribute("aria-pressed", !fav);
+  button.innerHTML = !fav ? "💖" : "&#9825;";
+  button.onclick = event => favoriteClicked(restaurant, button);
+  //});
 };
 
 /**

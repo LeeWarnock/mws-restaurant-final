@@ -21,7 +21,7 @@ window.initMap = () => {
   });
 };
 
-/*
+/**
  * Get current restaurant from page URL.
  */
 fetchRestaurantFromURL = callback => {
@@ -33,11 +33,10 @@ fetchRestaurantFromURL = callback => {
   const id = getParameterByName("id");
   if (!id) {
     // no id found in URL
-    let error = "No restaurant id in URL";
+    error = "No restaurant id in URL";
     callback(error, null);
   } else {
     DBHelper.fetchRestaurantById(id, (error, restaurant) => {
-      console.log(restaurant);
       self.restaurant = restaurant;
       if (!restaurant) {
         console.error(error);
@@ -71,8 +70,8 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
-
   // fill reviews
+
   DBHelper.fetchReviewsById(restaurant.id).then(fillReviewsHTML);
 };
 
@@ -102,14 +101,21 @@ fillRestaurantHoursHTML = (
  * Create all reviews HTML and add them to the webpage.
  */
 fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+  console.log("In fillReviewsHTML ", reviews);
   const container = document.getElementById("reviews-container");
-  const title = document.createElement("h2");
+  const title = document.createElement("h3");
   title.innerHTML = "Reviews";
   container.appendChild(title);
 
+  const addReview = document.createElement("button");
+  addReview.innerHTML = "Add a Review";
+  addReview.id = "reviewButton";
+  addReview.onclick = addReviewForm;
+  container.appendChild(addReview);
+
   if (!reviews) {
-    const noReviews = document.createElement("p");
-    noReviews.innerHTML = "No reviews yet!";
+    const noReviews = document.createElement("h3");
+    noReviews.innerHTML = "<br>No reviews yet!<br>";
     container.appendChild(noReviews);
     return;
   }
@@ -126,18 +132,23 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
 createReviewHTML = review => {
   const li = document.createElement("li");
   const name = document.createElement("p");
+  name.id = "reviewer-name";
   name.innerHTML = review.name;
   li.appendChild(name);
 
   const date = document.createElement("p");
-  date.innerHTML = review.date;
+  date.innerHTML = new Date(review.createdAt).toLocaleDateString();
   li.appendChild(date);
 
   const rating = document.createElement("p");
   rating.innerHTML = `Rating: ${review.rating}`;
   li.appendChild(rating);
 
+  const line = document.createElement("hr");
+  li.appendChild(line);
+
   const comments = document.createElement("p");
+  comments.id = "reviewer-comments";
   comments.innerHTML = review.comments;
   li.appendChild(comments);
 
@@ -165,4 +176,130 @@ getParameterByName = (name, url) => {
   if (!results) return null;
   if (!results[2]) return "";
   return decodeURIComponent(results[2].replace(/\+/g, " "));
+};
+// Adding Reviews ==========================================================
+
+/*
+ * Handle button click for adding a review
+ */
+addReviewForm = () => {
+  let addReviewButton = document.getElementById("reviewButton");
+  addReviewButton.style.display = "none";
+  const reviewList = document.getElementById("reviews-list");
+  reviewList.appendChild(reviewForm());
+  document.getElementById("name").focus();
+};
+
+/*
+ * Returns a form to append to th list of reviews for input.
+ */
+reviewForm = () => {
+  let formContainer = document.createElement("li");
+  let form = document.createElement("form");
+  form.id = "reviewForm";
+
+  let title = document.createElement("p");
+  title.innerHTML = "New Review";
+  title.id = "reviewer-name";
+  form.appendChild(title);
+
+  let p = document.createElement("p");
+  let name = document.createElement("input");
+  let nameLabel = document.createElement("label");
+  nameLabel.setAttribute("for", "name");
+  nameLabel.innerHTML = "First Name: ";
+  name.id = "name";
+  name.setAttribute("type", "text");
+  p.appendChild(nameLabel);
+  p.appendChild(name);
+  form.appendChild(p);
+
+  p = document.createElement("p");
+  let selectLabel = document.createElement("label");
+  selectLabel.setAttribute("for", "rating");
+  selectLabel.innerText = "Your rating: ";
+  p.appendChild(selectLabel);
+  let select = document.createElement("select");
+  select.id = "rating";
+  select.name = "rating";
+  select.classList.add("rating");
+  ["--", 1, 2, 3, 4, 5].forEach(number => {
+    const option = document.createElement("option");
+    option.value = number;
+    option.innerHTML = number;
+    if (number === "--") option.selected = true;
+    select.appendChild(option);
+  });
+  p.appendChild(select);
+  form.appendChild(p);
+
+  p = document.createElement("p");
+  let comments = document.createElement("textarea");
+  let commentsLabel = document.createElement("label");
+  commentsLabel.setAttribute("for", "comments");
+  commentsLabel.innerHTML = "Comments: ";
+  comments.id = "comments";
+  comments.setAttribute("rows", "10");
+  p.appendChild(commentsLabel);
+  p.appendChild(comments);
+  p.style.display = "flex";
+  p.style.alignItems = "center";
+  form.appendChild(p);
+
+  p = document.createElement("p");
+  let submitButton = document.createElement("button");
+  submitButton.id = "submitReview";
+  submitButton.setAttribute("type", "submit");
+  submitButton.innerHTML = "Submit Review";
+  p.appendChild(submitButton);
+  form.appendChild(p);
+
+  form.onsubmit = handleSubmit;
+  formContainer.appendChild(form);
+  return formContainer;
+};
+
+handleSubmit = e => {
+  // Takes care of submission cancelation
+  e.preventDefault();
+  //console.log("in handleSubmit");
+  let id = self.restaurant.id;
+  let name = document.getElementById("name").value;
+  let rating = document.getElementById("rating").value - 0;
+  let comments = document.getElementById("comments").value;
+  // Add the new review to the reviews list
+  const ul = document.getElementById("reviews-list");
+
+  // Put new review in reviews list on site ---
+  const li = document.createElement("li");
+  const newName = document.createElement("p");
+  newName.id = "reviewer-name";
+  newName.innerHTML = name;
+  li.appendChild(newName);
+
+  const date = document.createElement("p");
+  let now = Date.now();
+  //date.innerHTML = now.toLocaleDateString();
+  li.appendChild(date);
+
+  const newRating = document.createElement("p");
+  newRating.innerHTML = `Rating: ${rating}`;
+  li.appendChild(newRating);
+
+  const line = document.createElement("hr");
+  li.appendChild(line);
+
+  const newComments = document.createElement("p");
+  newComments.id = "reviewer-comments";
+  newComments.innerHTML = comments;
+  li.appendChild(newComments);
+  //---
+
+  ul.appendChild(li);
+
+  DBHelper.saveReview(id, name, rating, comments, Date.now());
+  let form = document.getElementById("reviewForm");
+  form.parentNode.removeChild(form);
+  let addReviewButton = document.getElementById("reviewButton");
+  addReviewButton.style.display = "block";
 };
