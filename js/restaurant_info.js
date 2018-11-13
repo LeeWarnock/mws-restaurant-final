@@ -177,8 +177,6 @@ getParameterByName = (name, url) => {
   if (!results[2]) return "";
   return decodeURIComponent(results[2].replace(/\+/g, " "));
 };
-// Adding Reviews ==========================================================
-
 /*
  * Handle button click for adding a review
  */
@@ -191,7 +189,7 @@ addReviewForm = () => {
 };
 
 /*
- * Returns a form to append to th list of reviews for input.
+ * Add review form for user
  */
 reviewForm = () => {
   let formContainer = document.createElement("li");
@@ -260,17 +258,13 @@ reviewForm = () => {
 };
 
 handleSubmit = e => {
-  // Takes care of submission cancelation
   e.preventDefault();
-  //console.log("in handleSubmit");
   let id = self.restaurant.id;
   let name = document.getElementById("name").value;
   let rating = document.getElementById("rating").value - 0;
   let comments = document.getElementById("comments").value;
-  // Add the new review to the reviews list
   const ul = document.getElementById("reviews-list");
 
-  // Put new review in reviews list on site ---
   const li = document.createElement("li");
   const newName = document.createElement("p");
   newName.id = "reviewer-name";

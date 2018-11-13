@@ -260,7 +260,6 @@ class DBHelper {
    * Function to update the Reviews Data stored in idb store: reviewData
    */
   static updateReviewCache(id, update) {
-    console.log(`In updateReviewCache - id: ${id}, update: ${update}`);
     let dbPromise = idb.open("restaurantReviews");
 
     dbPromise.then(function(db) {
@@ -276,7 +275,6 @@ class DBHelper {
    * Function to update the Restaurant Data stored in idb store: restaurantData
    */
   static updateRestaurantCache(id, update) {
-    console.log(`In updateRestaurantCache - id: ${id}, update: ${update}`);
     let dbPromise = idb.open("restaurantReviews");
 
     // Update all restaurant data
@@ -359,8 +357,7 @@ class DBHelper {
   }
 
   /*
-   * Function to update data being held in idb for updates, store: updateData
-   * Updated data is put in this store regardless of on/off-line status.
+   * update idb date online or offline
    */
   static addToUpdateQueue(url, method, update) {
     console.log(
@@ -379,7 +376,7 @@ class DBHelper {
   }
 
   /*
-   * Function to push updates in the idb update store to the server.
+   * push idb updates to server
    */
   static pushUpdates() {
     console.log(`In pushUpdates`);
@@ -420,7 +417,7 @@ class DBHelper {
   }
 
   /*
-   * Function for saving a new review.
+   * Save review
    */
   static saveReview(id, name, rating, comments, date /*, callback*/) {
     let url = `${DBHelper.DATABASE_URL_REVIEWS}`;
