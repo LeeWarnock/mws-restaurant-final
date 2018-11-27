@@ -224,44 +224,15 @@ class DBHelper {
         console.log("In fetchReviewsBy...ID catch, error:", error.message);
       });
   }
-  //ADDING CLICK FUNCTIONS
-
-  static updateFavorite(id, newState, callback) {
-    // Push the request into the waiting queue in IDB
-    const url = `${DBHelper.DATABASE_URL}/${id}/?is_favorite=${newState}`;
-    const method = "PUT";
-    DBHelper.updateCachedRestaurantData(id, { is_favorite: newState });
-    DBHelper.addPendingRequestToQueue(url, method);
-
-    // Update the favorite data on the selected ID in the cached data
-
-    callback(null, { id, value: newState });
-  }
-
-  /*
-   * Function to update the Reviews Data stored in idb store: reviewData
-   */
-  static updateReviewCache(id, update) {
-    let dbPromise = idb.open("restaurantReviews");
-
-    dbPromise.then(function(db) {
-      let trans = db
-        .transaction("reviewData", "readwrite")
-        .objectStore("reviewData")
-        .put({ id: Date.now(), restaurant_id: id, data: update });
-      return trans.complete;
-    });
-  }
-
   /*
    * Function to update the Restaurant Data stored in idb store: restaurantData
    */
   static updateRestaurantCache(id, update) {
+    console.log(`In updateRestaurantCache - id: ${id}, update: ${update}`);
     let dbPromise = idb.open("restaurantReviews");
 
     // Update all restaurant data
     dbPromise.then(function(db) {
-      //let restaurantStore =
       db.transaction("restaurantData", "readwrite")
         .objectStore("restaurantData")
         .get("-1")
@@ -339,7 +310,8 @@ class DBHelper {
   }
 
   /*
-   * update idb date online or offline
+   * Function to update data being held in idb for updates, store: updateData
+   * Updated data is put in this store regardless of on/off-line status.
    */
   static addToUpdateQueue(url, method, update) {
     console.log(
@@ -354,11 +326,12 @@ class DBHelper {
       })
       .catch(function(error) {
         console.log("In addToUpdateQueue catch, error: ", error.message);
-      });
+      })
+      .then(DBHelper.pushUpdates());
   }
 
   /*
-   * push idb updates to server
+   * Function to push updates in the idb update store to the server.
    */
   static pushUpdates() {
     console.log(`In pushUpdates`);
@@ -371,6 +344,7 @@ class DBHelper {
           // No updates, so get outta here!
           if (!cursor) return;
           let update = cursor.value.data;
+
           let params = {
             body: JSON.stringify(update.body),
             method: update.method
@@ -378,16 +352,22 @@ class DBHelper {
 
           fetch(update.url, params)
             .then(function(response) {
+              // Can't update right now, so get outta here!
               if (!response.ok) return;
             })
             .then(function() {
+              // Response came back ok!
               db.transaction("updateData", "readwrite")
                 .objectStore("updateData")
                 .openCursor()
                 .then(function(cursor) {
-                  cursor.delete().then(function() {
-                    console.log("Record deleted, calling next...");
-                  });
+                  cursor
+                    .delete()
+                    // Recursive call to push next update record. Will retrun in next call if empty.
+                    .then(function() {
+                      console.log("Record deleted, calling next...");
+                      DBHelper.pushUpdates();
+                    });
                 });
             });
         })
@@ -399,7 +379,7 @@ class DBHelper {
   }
 
   /*
-   * Save review
+   * Function for saving a new review.
    */
   static saveReview(id, name, rating, comments, date /*, callback*/) {
     let url = `${DBHelper.DATABASE_URL_REVIEWS}`;
