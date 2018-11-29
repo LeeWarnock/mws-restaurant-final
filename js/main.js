@@ -1,27 +1,34 @@
-/* eslint-disable multiline-comment-style */
-/* eslint-disable lines-around-comment */
-/* eslint-disable valid-jsdoc */
-/* eslint-disable max-statements */
-/* eslint-disable arrow-parens */
 let restaurants, neighborhoods, cuisines;
 var map;
 var markers = [];
 
-/*
+/**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
-document.addEventListener("DOMContentLoaded", event => {
-  fetchNeighborhoods();
-  fetchCuisines();
+document.addEventListener("DOMContentLoaded", () => {
+  IDBHelper.databaseExists((dbName = "restaurants-db"), function(yesno) {
+    if (yesno) {
+      console.log(dbName + " created? " + yesno);
+    } else {
+      console.log(dbName + " created? " + yesno);
+      IDBHelper.createNewDatabase();
+      IDBHelper.populateDatabase(IDBHelper.dbPromise);
+    }
+  });
+
+  setTimeout(function() {
+    fetchNeighborhoods();
+    fetchCuisines();
+  }, 3000);
 });
 
-/*
+/**
  * Fetch all neighborhoods and set their HTML.
  */
 fetchNeighborhoods = () => {
   DBHelper.fetchNeighborhoods((error, neighborhoods) => {
     if (error) {
-      // Log error
+      // Got an error
       console.error(error);
     } else {
       self.neighborhoods = neighborhoods;
@@ -30,7 +37,7 @@ fetchNeighborhoods = () => {
   });
 };
 
-/*
+/**
  * Set neighborhoods HTML.
  */
 fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
@@ -43,13 +50,13 @@ fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
   });
 };
 
-/*
+/**
  * Fetch all cuisines and set their HTML.
  */
 fetchCuisines = () => {
   DBHelper.fetchCuisines((error, cuisines) => {
     if (error) {
-      // Log the error
+      // Got an error!
       console.error(error);
     } else {
       self.cuisines = cuisines;
@@ -58,7 +65,7 @@ fetchCuisines = () => {
   });
 };
 
-/*
+/**
  * Set cuisines HTML.
  */
 fillCuisinesHTML = (cuisines = self.cuisines) => {
@@ -72,9 +79,6 @@ fillCuisinesHTML = (cuisines = self.cuisines) => {
   });
 };
 
-/*
- * Initialize Google map, called from HTML.
- */
 window.initMap = () => {
   let loc = {
     lat: 40.722216,
@@ -88,25 +92,29 @@ window.initMap = () => {
   updateRestaurants();
 };
 
-/*
+/**
  * Update page and map for current restaurants.
  */
 updateRestaurants = () => {
   const cSelect = document.getElementById("cuisines-select");
   const nSelect = document.getElementById("neighborhoods-select");
+  const fSelect = document.getElementById("favorites");
 
   const cIndex = cSelect.selectedIndex;
   const nIndex = nSelect.selectedIndex;
+  const fValue = fSelect.checked;
 
   const cuisine = cSelect[cIndex].value;
   const neighborhood = nSelect[nIndex].value;
+  const favorite = fValue;
 
-  DBHelper.fetchRestaurantByCuisineAndNeighborhood(
+  DBHelper.fetchRestaurantByCuisineAndNeighborhoodAndFavorite(
     cuisine,
     neighborhood,
+    favorite,
     (error, restaurants) => {
       if (error) {
-        // Error ALERT!
+        // Got an error!
         console.error(error);
       } else {
         resetRestaurants(restaurants);
@@ -116,7 +124,7 @@ updateRestaurants = () => {
   );
 };
 
-/*
+/**
  * Clear current restaurants, their HTML and remove their map markers.
  */
 resetRestaurants = restaurants => {
@@ -131,7 +139,7 @@ resetRestaurants = restaurants => {
   self.restaurants = restaurants;
 };
 
-/*
+/**
  * Create all restaurants HTML and add them to the webpage.
  */
 fillRestaurantsHTML = (restaurants = self.restaurants) => {
@@ -141,6 +149,7 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
   });
   addMarkersToMap();
 };
+
 /**
  * Create restaurant HTML.
  */
@@ -154,29 +163,9 @@ createRestaurantHTML = restaurant => {
   image.alt = "Photo of " + restaurant.name;
   li.append(image);
 
-  const name = document.createElement("h2");
+  const name = document.createElement("h1");
   name.innerHTML = restaurant.name;
   li.append(name);
-
-  /**
-   * Add Favorite Button.
-   */
-  const favoriteButton = document.createElement("button");
-  favoriteButton.className = "favoriteButton";
-  let isFavorite =
-    restaurant.is_favorite && restaurant.is_favorite.toString() === "true"
-      ? true
-      : false;
-  console.log(`${restaurant.name}, ${restaurant.is_favorite}`);
-  favoriteButton.setAttribute("aria-pressed", isFavorite);
-  favoriteButton.setAttribute(
-    "aria-label",
-    `Toggle to add ${restaurant.name} to favorites`
-  );
-  favoriteButton.innerHTML = isFavorite ? "💖" : "&#9825;";
-  favoriteButton.onclick = event => favoriteClicked(restaurant, favoriteButton);
-
-  li.append(favoriteButton);
 
   const neighborhood = document.createElement("p");
   neighborhood.innerHTML = restaurant.neighborhood;
@@ -194,28 +183,6 @@ createRestaurantHTML = restaurant => {
   return li;
 };
 
-//END FAVORITE
-
-//Favorite Click Handler
-favoriteClicked = (restaurant, button) => {
-  // Get current fav state
-  let fav =
-    button.getAttribute("aria-pressed") &&
-    button.getAttribute("aria-pressed") === "true"
-      ? true
-      : false;
-
-  let requestURL = `${DBHelper.DATABASE_URL}/${
-    restaurant.id
-  }/?is_favorite=${!fav}`;
-  let requestMethod = "PUT";
-  DBHelper.updateRestaurantCache(restaurant.id, { is_favorite: !fav });
-  DBHelper.addToUpdateQueue(requestURL, requestMethod);
-  button.setAttribute("aria-pressed", !fav);
-  button.innerHTML = !fav ? "💖" : "&#9825;";
-  button.onclick = event => favoriteClicked(restaurant, button);
-};
-
 /**
  * Add markers for current restaurants to the map.
  */
@@ -223,7 +190,6 @@ addMarkersToMap = (restaurants = self.restaurants) => {
   restaurants.forEach(restaurant => {
     // Add marker to the map
     const marker = DBHelper.mapMarkerForRestaurant(restaurant, self.map);
-
     google.maps.event.addListener(marker, "click", () => {
       window.location.href = marker.url;
     });

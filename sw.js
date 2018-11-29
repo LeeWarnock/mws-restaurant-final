@@ -1,33 +1,59 @@
-self.importScripts("js/idb.js");
+importScripts("/js/idb.js");
+importScripts("/js/idbhelper.js");
 
-var CACHE_NAME = "static-cache";
+let staticCacheName = "restaurants-static";
 
-self.addEventListener("install", function(e) {
-  e.waitUntil(
-    caches.open("CACHE_NAME").then(function(cache) {
-      return cache
-        .addAll([
-          "/index.html",
-          "/restaurant.html",
-          "/css/styles.css",
-          "/js/dbhelper.js",
-          "/js/main.js",
-          "/js/restaurant_info.js",
-          "/js/idb.js",
-          "/img/"
-        ])
-        .catch(error => {
-          console.log("Caches open failed: " + error);
-        });
+self.addEventListener("install", event => {
+  let UrlsToCache = [
+    "/",
+    "/index.html",
+    "/restaurant.html",
+    "/css/styles.css",
+    "/js/idb.js",
+    "/js/idbhelper.js",
+    "/js/dbhelper.js",
+    "/js/main.js",
+    "/js/restaurant_info.js",
+    "/img/"
+  ];
+
+  event.waitUntil(
+    caches.open(staticCacheName).then(cache => {
+      return cache.addAll(UrlsToCache);
     })
   );
 });
 
-self.addEventListener("fetch", function(event) {
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys().then(cachesNames => {
+      return Promise.all(
+        cachesNames
+          .filter(cachesName => {
+            return (
+              cachesName.startsWith("restaurants-") &&
+              cachesName != staticCacheName
+            );
+          })
+          .map(cachesName => {
+            return caches.delete(cachesName);
+          })
+      );
+    })
+  );
+});
+
+self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request).then(function(response) {
+    caches.match(event.request, { ignoreSearch: true }).then(response => {
       if (response) return response;
       return fetch(event.request);
     })
   );
+});
+
+self.addEventListener("sync", function(event) {
+  if (event.tag === "review-sync") {
+    event.waitUntil(IDBHelper.syncOfflineReviews());
+  }
 });

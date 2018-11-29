@@ -8,13 +8,13 @@
   "display": "fullscreen",
   "icons": [
     {
-      "src": "/img/icons/FoodFinder-Icon-192",
-      "type": "/image/png",
+      "src": "img/icons/fork_knife_192.png",
+      "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/img/icons/FoodFinder-Icon-512",
-      "type": "/image/png",
+      "src": "img/icons/fork_knife_512.png",
+      "type": "image/png",
       "sizes": "512x512"
     }
   ]
