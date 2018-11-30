@@ -5,7 +5,7 @@ var minify = require("gulp-minify-css");
 
 gulp.task("js", function() {
   gulp
-    .src("src/scripts/*.js")
+    .src("js/*.js")
     .pipe(concat("script.js"))
     .pipe(uglify())
     .pipe(gulp.dest("build/scripts/"));
@@ -13,7 +13,7 @@ gulp.task("js", function() {
 
 gulp.task("css", function() {
   gulp
-    .src("src/styles/*.css")
+    .src("css/*.css")
     .pipe(concat("styles.css"))
     .pipe(minify())
     .pipe(gulp.dest("build/styles/"));
