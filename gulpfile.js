@@ -1,22 +1,21 @@
 var gulp = require("gulp");
 var concat = require("gulp-concat");
-var uglify = require("gulp-uglify");
-var minify = require("gulp-minify-css");
+var minify = require("gulp-minify");
+var cleanCss = require("gulp-clean-css");
 
-gulp.task("js", function() {
-  gulp
-    .src("js/*.js")
-    .pipe(concat("script.js"))
-    .pipe(uglify())
-    .pipe(gulp.dest("build/scripts/"));
-});
-
-gulp.task("css", function() {
-  gulp
-    .src("css/*.css")
-    .pipe(concat("styles.css"))
+gulp.task("pack-js", function() {
+  return gulp
+    .src(["js/*.js"])
     .pipe(minify())
-    .pipe(gulp.dest("build/styles/"));
+    .pipe(gulp.dest("build/js"));
 });
 
-gulp.task("default", ["js", "css"], function() {});
+gulp.task("pack-css", function() {
+  return gulp
+    .src(["css/*.css"])
+    .pipe(concat("stylesheet.css"))
+    .pipe(cleanCss())
+    .pipe(gulp.dest("build/css"));
+});
+
+gulp.task("default", ["pack-js", "pack-css"]);
