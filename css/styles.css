@@ -57,7 +57,8 @@ hgroup,
 menu,
 nav,
 section {
-  display: block;
+  display: flex;
+  flex-wrap: wrap;
 }
 #maincontent {
   background-color: #f3f3f3;
