@@ -2,7 +2,7 @@
   "short_name": "DinnerTime",
   "name": "Restaurant Reviews",
   "description": "A Restaurant Reviews and Locations App",
-  "start_url": "index.html",
+  "start_url": "/index.html",
   "theme_color": "blue",
   "background_color": "orange",
   "display": "fullscreen",
